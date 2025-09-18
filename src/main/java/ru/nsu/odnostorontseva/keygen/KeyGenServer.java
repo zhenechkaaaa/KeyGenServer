@@ -30,14 +30,33 @@ public class KeyGenServer {
             if (ready == 0) continue;
 
             Set<SelectionKey> selectedKeys = selector.selectedKeys();
+            Iterator<SelectionKey> it = selectedKeys.iterator();
 
-            for (SelectionKey key : selectedKeys) {
-                if (key.isAcceptable()) {
-                    handleAccept()
+            while (it.hasNext()) {
+                SelectionKey key = it.next();
+                it.remove();
+
+                try {
+                    if (key.isAcceptable()) handleAccept(serverSocket, selector);
+                    if (key.isReadable()) handleRead(key);
+                    if (key.isWritable()) handleWrite(key);
+                } catch (IOException e) {
+                    key.cancel();
+                    try { key.channel().close(); } catch (IOException ignore) {}
                 }
             }
         }
     }
 
-    public void handleAccept() {}
+    private void handleAccept(ServerSocketChannel server, Selector selector) throws IOException {
+        SocketChannel client = server.accept();
+        client.configureBlocking(false);
+
+        ClientContext context = new ClientContext();
+        client.register(selector, SelectionKey.OP_READ, context);
+    }
+
+    private void handleRead(SelectionKey key) throws IOException {}
+    private void handleWrite(SelectionKey key) throws IOException {}
+
 }
