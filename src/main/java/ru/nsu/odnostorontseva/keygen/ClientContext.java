@@ -4,12 +4,9 @@ import java.nio.ByteBuffer;
 
 public class ClientContext {
     ByteBuffer inputBuffer = ByteBuffer.allocate(1024);
-    ByteBuffer outputBuffer;
-    String clientName;
+    StringBuilder sb = new StringBuilder();
+    String clientName = null;
+    ByteBuffer writeBuffer = null;
+    boolean waitingForKeys = false;
 
-    /*
-    * // Дополнительно для RSA
-    boolean requestInProgress = false;
-    KeyPair keyPair;
-    X509Certificate certificate;*/
 }
