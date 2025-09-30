@@ -7,7 +7,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -17,16 +19,19 @@ public class KeyGenServer {
     private final int workers;
     private final BlockingQueue<KeyGen> taskQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<KeyGenRes> resultQueue = new LinkedBlockingQueue<>();
+    private final KeyGenService keyGenService;
+    private final List<Thread> workerThreads = new ArrayList<>();
+    private volatile boolean running = true;
 
 
-    public KeyGenServer(int port, int workers) {
+    public KeyGenServer(int port, int workers, KeyGenService keyGenService) {
         this.port = port;
         this.workers = workers;
+        this.keyGenService = keyGenService;
     }
 
     public void start() throws IOException {
         Selector selector = Selector.open();
-
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
         serverSocket.socket().bind(new InetSocketAddress(port));
         serverSocket.configureBlocking(false);
@@ -35,11 +40,12 @@ public class KeyGenServer {
         System.out.println("Server listening on port: " + port);
 
         for (int i = 0; i < workers; i++) {
-            Thread worker = new Thread(new KeyGenWorker(taskQueue, resultQueue));
+            Thread worker = new Thread(new KeyGenWorker(taskQueue, resultQueue, keyGenService, selector));
             worker.start();
+            workerThreads.add(worker);
         }
 
-        while (true) {
+        while (running) {
             int ready = selector.select();
             if (ready > 0) {
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -63,14 +69,38 @@ public class KeyGenServer {
             }
 
             while (!resultQueue.isEmpty()) {
+                System.out.println("im here");
                 KeyGenRes result = resultQueue.poll();
                 if (result != null) {
                     ClientContext context = (ClientContext) result.clientKey.attachment();
                     context.writeBuffer = ByteBuffer.wrap(result.resp);
-                    result.clientKey.interestOps(SelectionKey.OP_WRITE);
+
+                    SelectionKey clientKey = result.clientKey;
+                    clientKey.interestOps(clientKey.interestOps() | SelectionKey.OP_WRITE);
+
+                    System.out.println("Prepared response for: " + context.clientName);
+
                 }
             }
         }
+
+        for (Thread worker : workerThreads) {
+            worker.interrupt();
+        }
+
+        for (Thread worker : workerThreads) {
+            try {
+                worker.join();
+            } catch (InterruptedException ignored) {}
+        }
+
+        serverSocket.close();
+        selector.close();
+        System.out.println("Server shutdown complete.");
+    }
+
+    public void stop() {
+        running = false;
     }
 
     private void handleAccept(ServerSocketChannel server, Selector selector) throws IOException {
@@ -110,7 +140,7 @@ public class KeyGenServer {
                 context.sb.append((char) b);
             }
         }
-        context.inputBuffer.clear();
+        context.inputBuffer.compact();
     }
 
     private void handleWrite(SelectionKey key) throws IOException {
