@@ -1,8 +1,7 @@
-package ru.nsu.odnostorontseva.keygen;
+package ru.nsu.odnostorontseva.keygen.entity;
 
 import lombok.AllArgsConstructor;
 
-import java.nio.channels.SelectionKey;
 import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor

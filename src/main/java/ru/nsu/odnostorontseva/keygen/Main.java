@@ -1,6 +1,7 @@
 package ru.nsu.odnostorontseva.keygen;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import ru.nsu.odnostorontseva.keygen.generators.RSAKeyGenService;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

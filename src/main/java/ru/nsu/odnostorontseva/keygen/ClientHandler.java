@@ -1,6 +1,8 @@
 package ru.nsu.odnostorontseva.keygen;
 
 import lombok.AllArgsConstructor;
+import ru.nsu.odnostorontseva.keygen.entity.ClientContext;
+import ru.nsu.odnostorontseva.keygen.entity.KeyGen;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

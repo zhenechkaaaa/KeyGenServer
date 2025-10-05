@@ -1,4 +1,4 @@
-package ru.nsu.odnostorontseva.keygen;
+package ru.nsu.odnostorontseva.keygen.generators;
 
 import lombok.AllArgsConstructor;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -8,6 +8,7 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import ru.nsu.odnostorontseva.keygen.entity.KeyAndCrt;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
