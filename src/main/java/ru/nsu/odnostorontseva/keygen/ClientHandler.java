@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class ClientHandler {
     private final BlockingQueue<KeyGen> taskQueue;
     private final Map<String, CompletableFuture<byte[]>> generationMap;
+    private final Map<String, byte[]> keyCache;
 
     public void read(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
@@ -49,6 +50,15 @@ public class ClientHandler {
     }
 
     private void submitGeneration(SelectionKey key, ClientContext ctx) {
+        String name = ctx.clientName;
+
+        byte[] cache = keyCache.get(name);
+        if (cache != null) {
+            ctx.writeBuffer = ByteBuffer.wrap(cache);
+            enableWrite(key);
+            return;
+        }
+
         var future = generationMap.computeIfAbsent(ctx.clientName, n -> {
             var f = new CompletableFuture<byte[]>();
             taskQueue.add(new KeyGen(n, f));
@@ -56,17 +66,15 @@ public class ClientHandler {
         });
 
         future.whenComplete((bytes, ex) -> {
-            if (ex != null) {
-                System.err.println("Generation failed for " + ctx.clientName + ": " + ex);
-                try {
-                    close(key);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return;
+            generationMap.remove(name);
+            if (ex == null) {
+                keyCache.put(name, bytes);
+                ctx.writeBuffer = ByteBuffer.wrap(bytes);
+                enableWrite(key);
+            } else {
+                System.err.println("Generation failed for " + name + ": " + ex);
+                try { close(key); } catch (IOException e) { throw new RuntimeException(e); }
             }
-            ctx.writeBuffer = ByteBuffer.wrap(bytes);
-            enableWrite(key);
         });
     }
 

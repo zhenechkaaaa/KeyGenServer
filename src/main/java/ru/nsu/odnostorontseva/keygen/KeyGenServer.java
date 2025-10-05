@@ -32,6 +32,7 @@ public class KeyGenServer {
 
     private final BlockingQueue<KeyGen> taskQueue = new LinkedBlockingQueue<>();
     private final Map<String, CompletableFuture<byte[]>> generationMap = new ConcurrentHashMap<>();
+    private final Map<String, byte[]> keyMap = new ConcurrentHashMap<>();
     private final List<Thread> workerThreads = new ArrayList<>();
 
     public void start() throws IOException {
@@ -49,7 +50,7 @@ public class KeyGenServer {
             workerThreads.add(worker);
         }
 
-        ClientHandler clientHandler = new ClientHandler(taskQueue, generationMap);
+        ClientHandler clientHandler = new ClientHandler(taskQueue, generationMap, keyMap);
 
         try {
             while (running) {
