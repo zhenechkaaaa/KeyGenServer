@@ -1,36 +1,31 @@
 package ru.nsu.odnostorontseva.keygen;
 
-import java.nio.channels.Selector;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import java.util.concurrent.BlockingQueue;
 
+@AllArgsConstructor
 public class KeyGenWorker implements Runnable {
+
+    @NonNull
     private final BlockingQueue<KeyGen> taskQueue;
-    private final BlockingQueue<KeyGenRes> resultQueue;
     private final KeyGenService keyGenService;
-    private final Selector selector;
-
-
-    public KeyGenWorker(BlockingQueue<KeyGen> taskQueue,
-                        BlockingQueue<KeyGenRes> resultQueue, KeyGenService keyGenService, Selector selector) {
-        this.taskQueue = taskQueue;
-        this.resultQueue = resultQueue;
-        this.keyGenService = keyGenService;
-        this.selector = selector;
-
-    }
 
     @Override
     public void run() {
         try {
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 KeyGen task = taskQueue.take();
 
-                KeyAndCrt keyAndCrt = keyGenService.generate(task.name);
-                byte[] response = keyGenService.serialize(keyAndCrt);
+                try {
+                    KeyAndCrt keyAndCrt = keyGenService.generate(task.name);
+                    byte[] response = keyGenService.serialize(keyAndCrt);
 
-                KeyGenRes result = new KeyGenRes(task.clientKey, response);
-                resultQueue.put(result);
-                selector.wakeup();
+                    task.future.complete(response);
+
+                } catch (Exception e) {
+                    task.future.completeExceptionally(e);
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

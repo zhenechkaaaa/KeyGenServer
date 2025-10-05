@@ -4,9 +4,7 @@ import java.nio.ByteBuffer;
 
 public class ClientContext {
     ByteBuffer inputBuffer = ByteBuffer.allocate(1024);
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     String clientName = null;
     ByteBuffer writeBuffer = null;
-    boolean waitingForKeys = false;
-
 }

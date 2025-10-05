@@ -1,13 +1,12 @@
 package ru.nsu.odnostorontseva.keygen;
 
+import lombok.AllArgsConstructor;
+
 import java.nio.channels.SelectionKey;
+import java.util.concurrent.CompletableFuture;
 
+@AllArgsConstructor
 public class KeyGen {
-    final String name;
-    final SelectionKey clientKey;
-
-    public KeyGen(String name, SelectionKey clientKey) {
-        this.name = name;
-        this.clientKey = clientKey;
-    }
+    public final String name;
+    public final CompletableFuture<byte[]> future;
 }

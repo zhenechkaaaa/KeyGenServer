@@ -1,5 +1,6 @@
 package ru.nsu.odnostorontseva.keygen;
 
+import lombok.AllArgsConstructor;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -17,15 +18,11 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+@AllArgsConstructor
 public class RSAKeyGenService implements KeyGenService {
 
     private final PrivateKey caPrivateKey;
     private final String issuerName;
-
-    public RSAKeyGenService(PrivateKey caPrivateKey, String issuerName) {
-        this.caPrivateKey = caPrivateKey;
-        this.issuerName = issuerName;
-    }
 
     @Override
     public KeyAndCrt generate(String clientName) throws Exception {

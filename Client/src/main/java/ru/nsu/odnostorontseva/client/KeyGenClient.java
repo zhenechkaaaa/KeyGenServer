@@ -10,12 +10,9 @@ import java.util.Scanner;
 public class KeyGenClient {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
+        String host = "localhost";
 
-        System.out.print("Enter host: ");
-        String host = scanner.nextLine();
-
-        System.out.print("Enter port: ");
-        int port = Integer.parseInt(scanner.nextLine());
+        int port = 8080;
 
         System.out.print("Enter name: ");
         String name = scanner.nextLine();
@@ -24,8 +21,7 @@ public class KeyGenClient {
             OutputStream out = socket.getOutputStream();
             InputStream in = socket.getInputStream();
 
-            // Отправляем имя
-            out.write(name.getBytes(StandardCharsets.UTF_8));
+            out.write(name.getBytes(StandardCharsets.US_ASCII));
             out.write(0);
             out.flush();
 
@@ -35,7 +31,6 @@ public class KeyGenClient {
             String privateKeyPem = extractPemBlock(response, "RSA PRIVATE KEY");
             String certPem = extractPemBlock(response, "CERTIFICATE");
 
-            // Сохраняем в отдельные файлы
             try (FileOutputStream fos = new FileOutputStream("client.key")) {
                 fos.write(privateKeyPem.getBytes(StandardCharsets.UTF_8));
             }
@@ -60,3 +55,4 @@ public class KeyGenClient {
         return pem.substring(begin, end + endMarker.length()) + "\n";
     }
 }
+
