@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'ru.nsu.odnostorontseva.keygen'
@@ -31,4 +33,20 @@ sourceSets {
             srcDirs = ['src/main/resources']
         }
     }
+}
+
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'ru.nsu.odnostorontseva.keygen.Main'
+}
+
+shadowJar {
+    archiveBaseName.set('server')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mergeServiceFiles()
 }

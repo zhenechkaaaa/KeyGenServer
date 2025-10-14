@@ -9,16 +9,12 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the num of the workers: ");
-        int workers = scanner.nextInt();
-        scanner.close();
+        int workers = 8;
 
         Security.addProvider(new BouncyCastleProvider());
 

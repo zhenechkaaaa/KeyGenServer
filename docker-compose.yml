@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  keygen-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: keygen-server
+    ports:
+      - "8080:8080"
+
+  keygen-client:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile.client
+    depends_on:
+      - keygen-server
+    deploy:
+      mode: replicated
+      replicas: 10
+
+
